@@ -1,0 +1,43 @@
+name: "Sync Markdown to Confluence"
+description: "Sync Markdown files in your repo to a Confluence space."
+author: "Nikolay Dzambazov"
+
+inputs:
+  CONFLUENCE_BASE_URL:
+    description: "Base URL of your Confluence instance"
+    required: true
+  EMAIL:
+    description: "Email for authentication in Confluence"
+    required: true
+  API_TOKEN:
+    description: "Confluence API token"
+    required: true
+  SPACE_KEY:
+    description: "Confluence space key"
+    required: true
+  DOCS_DIR:
+    description: "Root folder with Markdown documentation"
+    required: false
+    default: "docs"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.13.1"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r generator/requirements.txt
+
+    - name: Run sync script
+      env:
+        API_TOKEN: ${{ inputs.API_TOKEN }}
+        EMAIL: ${{ inputs.EMAIL }}
+        CONFLUENCE_BASE_URL: ${{ inputs.CONFLUENCE_BASE_URL }}
+        DOCS_DIR: ${{ inputs.DOCS_DIR }}
+        SPACE_KEY: ${{ inputs.SPACE_KEY }}
+      run: python sync/main.py
