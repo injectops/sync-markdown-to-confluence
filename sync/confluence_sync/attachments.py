@@ -1,11 +1,9 @@
 import os
-from confluence_sync import confluence_api
 
-def upload_attachments_for_page(folder_path, page_id):
+def upload_attachments_for_page(api_client, folder_path, page_id):
     attachments_dir = os.path.join(folder_path, "attachments")
 
     if not os.path.isdir(attachments_dir):
-        print(f"No attachments directory found for {folder_path}. Skipping upload.")
         return
 
     if not os.listdir(attachments_dir):
@@ -16,7 +14,7 @@ def upload_attachments_for_page(folder_path, page_id):
         
         if os.path.isfile(file_path):
             try:
-                confluence_api.upload_attachment(page_id, file_path)
+                api_client.upload_attachment(page_id, file_path)
                 print(f"Uploaded attachment: {file} to page ID: {page_id}")
             except Exception as e:
                 print(f"Failed to upload {file}: {e}")
