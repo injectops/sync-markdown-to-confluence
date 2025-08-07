@@ -1,5 +1,5 @@
 import os
-from confluence_sync import config
+from . import config
 
 def find_page_folders(base_dir=config.DOCS_DIR):
     page_folders = []
@@ -7,4 +7,3 @@ def find_page_folders(base_dir=config.DOCS_DIR):
         if 'README.md' in files:
             page_folders.append(root)
     return page_folders
-
