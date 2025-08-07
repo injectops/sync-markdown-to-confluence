@@ -12,7 +12,6 @@ class ConfluenceAPI:
         self.space_key = config.SPACE_KEY
         self.session = requests.Session()
         self.session.auth = (config.EMAIL, config.API_TOKEN)
-        self.session.headers.update({"Content-Type": "application/json"})
 
     def _request(self, method, url, **kwargs):
         response = self.session.request(method, url, **kwargs)
@@ -47,7 +46,8 @@ class ConfluenceAPI:
         if parent_id:
             payload["ancestors"] = [{"id": parent_id}]
 
-        res = self._request("POST", url, data=json.dumps(payload))
+        headers = {"Content-Type": "application/json"}
+        res = self._request("POST", url, headers=headers, data=json.dumps(payload))
         return res.json()
 
     def delete_page(self, page_id):
@@ -69,7 +69,8 @@ class ConfluenceAPI:
             }
         }
 
-        res = self._request("PUT", url, data=json.dumps(payload))
+        headers = {"Content-Type": "application/json"}
+        res = self._request("PUT", url, headers=headers, data=json.dumps(payload))
         return res.json()
 
     def add_labels(self, page_id, labels):
@@ -77,7 +78,8 @@ class ConfluenceAPI:
             return
         url = f"{self.base_url}/rest/api/content/{page_id}/label"
         label_data = [{"prefix": "global", "name": label} for label in labels]
-        self._request("POST", url, data=json.dumps(label_data))
+        headers = {"Content-Type": "application/json"}
+        self._request("POST", url, headers=headers, data=json.dumps(label_data))
 
     def get_attachment(self, page_id, filename):
         url = f"{self.base_url}/rest/api/content/{page_id}/child/attachment"
