@@ -1,10 +1,11 @@
 import os
-from . import confluence_api, config, markdown_utils
+from . import config, markdown_utils
 from .attachments import upload_attachments_for_page
 
 
 class PageBuilder:
-    def __init__(self):
+    def __init__(self, api_client):
+        self.api_client = api_client
         self.page_cache = {}
 
     def _format_title(self, folder_name):
@@ -24,12 +25,12 @@ class PageBuilder:
                 continue
 
             title = self._format_title(part)
-            existing = confluence_api.get_page_by_title(title, config.SPACE_KEY)
+            existing = self.api_client.get_page_by_title(title, config.SPACE_KEY)
 
             if existing:
                 parent_id = existing["id"]
             else:
-                created = confluence_api.create_page(title, config.SPACE_KEY, "<p>(placeholder)</p>", parent_id)
+                created = self.api_client.create_page(title, config.SPACE_KEY, "<p>(placeholder)</p>", parent_id)
                 parent_id = created["id"]
 
             self.page_cache[cache_key] = parent_id
@@ -48,7 +49,7 @@ class PageBuilder:
         parent_parts = folder_parts[:-1]
         parent_id = self.ensure_page_hierarchy(parent_parts) if parent_parts else config.DEFAULT_PARENT_PAGE_ID
 
-        existing = confluence_api.get_page_by_title(title, config.SPACE_KEY)
+        existing = self.api_client.get_page_by_title(title, config.SPACE_KEY)
 
         if existing:
             current_html = existing["body"]["storage"]["value"]
@@ -56,20 +57,17 @@ class PageBuilder:
                 print(f"Skipping {title} - no changes detected")
                 page_id = existing["id"]
             else:
-                updated = confluence_api.update_page(existing["id"], title, html_content, existing["version"]["number"])
+                updated = self.api_client.update_page(existing["id"], title, html_content, existing["version"]["number"])
                 print(f"Updated {title}")
                 page_id = updated["id"]
         else:
-            created = confluence_api.create_page(title, config.SPACE_KEY, html_content, parent_id)
+            created = self.api_client.create_page(title, config.SPACE_KEY, html_content, parent_id)
             print(f"Created {title}")
             page_id = created["id"]
 
         if labels:
-            confluence_api.add_labels(page_id, labels)
+            self.api_client.add_labels(page_id, labels)
 
-        upload_attachments_for_page(folder_path, page_id)
+        upload_attachments_for_page(self.api_client, folder_path, page_id)
 
         return page_id
-
-page_builder = PageBuilder()
-sync_page = page_builder.sync_page

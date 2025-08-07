@@ -138,5 +138,3 @@ class ConfluenceAPI:
         self.upload_attachment(state_page["id"], state_file, filename=self.STATE_ATTACHMENT_NAME)
         print(f"[INFO] Updated state attachment '{self.STATE_ATTACHMENT_NAME}'")
         os.remove(state_file)
-
-confluence_api = ConfluenceAPI()
